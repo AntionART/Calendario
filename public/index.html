@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendario NEUROCOOP</title>
+  <link rel="icon" href="/Favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/public.css">
+</head>
+<body>
+
+<!-- Header -->
+<header id="header">
+  <button id="btn-sidebar" title="Menú" onclick="toggleSidebar()">
+    <i class="fa-solid fa-bars"></i>
+  </button>
+  <div class="h-brand">
+    <img src="/Logos.png" alt="NEUROCOOP" id="brand-logo">
+    <h1>Calendario <span>NEUROCOOP</span></h1>
+  </div>
+  <div class="h-nav">
+    <button id="btn-prev" onclick="cal.prev()" title="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+    <span id="date-label">Cargando...</span>
+    <button id="btn-next" onclick="cal.next()" title="Siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+    <button id="btn-today" onclick="cal.goToday()">Hoy</button>
+  </div>
+  <div class="h-right">
+    <div class="view-tabs">
+      <button data-view="month" class="active">Mes</button>
+    </div>
+    <button id="btn-search-toggle" title="Buscar" onclick="toggleSearch()">
+      <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+    <div class="h-search" id="h-search">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="search" id="search-input" placeholder="Buscar eventos..." autocomplete="off">
+    </div>
+  </div>
+</header>
+
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- Main Layout -->
+<div id="layout">
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <!-- Mini Calendar -->
+    <div class="sb-section">
+      <div id="mini-cal"></div>
+    </div>
+
+    <!-- Filtros de sede -->
+    <div class="sb-section">
+      <h3>Filtrar por sede</h3>
+      <div class="sede-filter-list" id="sede-filters">
+        <label class="sede-filter-item active" data-sede="0">
+          <span class="sede-dot" style="background:#F97316"></span>
+          <span class="label">Todas las sedes</span>
+        </label>
+        <label class="sede-filter-item" data-sede="1">
+          <span class="sede-dot" style="background:#1D6FA4"></span>
+          <span class="label">Cúcuta</span>
+        </label>
+        <label class="sede-filter-item" data-sede="2">
+          <span class="sede-dot" style="background:#0D9276"></span>
+          <span class="label">Pamplona</span>
+        </label>
+        <label class="sede-filter-item" data-sede="3">
+          <span class="sede-dot" style="background:#7C3AED"></span>
+          <span class="label">Ocaña</span>
+        </label>
+      </div>
+    </div>
+
+
+  </aside>
+
+  <!-- Calendar -->
+  <main id="cal-main">
+    <div id="cal-view"></div>
+  </main>
+</div>
+
+<!-- Day Events Modal -->
+<div id="day-modal" style="display:none">
+  <div class="modal-backdrop" onclick="closeDayModal()">
+    <div class="modal-box day-modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-titulo" id="day-modal-title"></div>
+        <button class="modal-close" onclick="closeDayModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="day-modal-list" id="day-modal-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Event Modal -->
+<div id="event-modal" style="display:none">
+  <div class="modal-backdrop" onclick="closeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-sede-badge" id="modal-sede-badge"></div>
+        <div class="modal-titulo" id="modal-titulo"></div>
+        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-dates">
+          <div class="modal-date-item">
+            <div class="mdi-lbl"><i class="fa-regular fa-calendar"></i> Inicio</div>
+            <div class="mdi-val" id="modal-inicio"></div>
+          </div>
+          <div class="modal-date-item">
+            <div class="mdi-lbl"><i class="fa-regular fa-calendar-check"></i> Fin</div>
+            <div class="mdi-val" id="modal-fin"></div>
+          </div>
+        </div>
+        <div class="modal-desc" id="modal-desc"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loader -->
+<div id="loader" style="display:none"><div class="spinner"></div></div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script src="/js/calendar.js"></script>
+</body>
+</html>
