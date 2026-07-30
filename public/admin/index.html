@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin – Calendario NEUROCOOP</title>
+  <link rel="icon" href="/Favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+
+<!-- ══ LOGIN PAGE ════════════════════════════════════════════════ -->
+<div id="login-page">
+  <div class="login-card">
+    <img src="/Logos.png" alt="NEUROCOOP" class="login-logo">
+    <div class="login-title">Portal de Administración</div>
+    <div class="login-subtitle">Calendario NEUROCOOP</div>
+    <div class="login-divider"></div>
+    <label class="login-label">Contraseña de acceso</label>
+    <div class="login-input-wrap">
+      <input type="password" id="login-pass" class="login-input" placeholder="••••••••" autocomplete="current-password">
+      <button class="login-eye" onclick="togglePass()" id="eye-btn" type="button">
+        <i class="fa-regular fa-eye" id="eye-icon"></i>
+      </button>
+    </div>
+    <button class="login-btn" onclick="doLogin()" id="login-btn">
+      <i class="fa-solid fa-right-to-bracket"></i> &nbsp;Acceder
+    </button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ══ ADMIN APP ══════════════════════════════════════════════════ -->
+<div id="admin-app" style="display:none">
+
+  <!-- Sidebar -->
+  <aside id="admin-sidebar">
+    <div class="adm-sidebar-head">
+      <img src="/Logos.png" alt="NEUROCOOP">
+      <div class="adm-title">Administración</div>
+    </div>
+    <nav class="adm-nav">
+      <button class="adm-nav-item active" data-page="eventos" onclick="adm.go('eventos')">
+        <i class="fa-solid fa-calendar-days ni-icon"></i> Eventos
+      </button>
+      <button class="adm-nav-item" data-page="settings" onclick="adm.go('settings')">
+        <i class="fa-solid fa-gear ni-icon"></i> Configuración
+      </button>
+    </nav>
+    <div class="adm-sidebar-foot">
+      <button class="adm-nav-item" onclick="adm.logout()" style="color:#DC2626">
+        <i class="fa-solid fa-right-from-bracket ni-icon"></i> Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div id="admin-main">
+    <!-- Top bar -->
+    <div class="adm-topbar">
+      <h2 id="adm-page-title">Dashboard</h2>
+      <div class="adm-topbar-actions" id="adm-topbar-actions"></div>
+    </div>
+
+    <!-- Content -->
+    <div id="admin-content">
+
+      <!-- ── EVENTS LIST ─────────────────────────────────────────── -->
+      <div id="page-eventos" style="display:none">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-list" style="color:var(--primary)"></i> &nbsp;Todos los Eventos</h3>
+          </div>
+          <div class="card-body">
+            <div class="events-toolbar">
+              <div class="events-search">
+                <i class="fa-solid fa-magnifying-glass si"></i>
+                <input type="search" id="ev-search" placeholder="Buscar por título o descripción..." oninput="adm.filterEvents()">
+              </div>
+              <div class="events-filter">
+                <select id="ev-sede-filter" onchange="adm.filterEvents()">
+                  <option value="0">Todas las sedes</option>
+                  <option value="1">Cúcuta</option>
+                  <option value="2">Pamplona</option>
+                  <option value="3">Ocaña</option>
+                  <option value="4">Todas las sedes (global)</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" onclick="adm.go('nuevo')">
+                <i class="fa-solid fa-plus"></i> Nuevo Evento
+              </button>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="events-table">
+                <thead>
+                  <tr>
+                    <th>Título</th><th>Sede</th><th>Inicio</th><th>Fin</th><th>Creado</th><th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="events-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── EVENT FORM ──────────────────────────────────────────── -->
+      <div id="page-form" style="display:none">
+        <div class="card">
+          <div class="card-header">
+            <h3 id="form-title"><i class="fa-solid fa-calendar-plus" style="color:var(--primary)"></i> &nbsp;Nuevo Evento</h3>
+          </div>
+          <div class="card-body">
+            <input type="hidden" id="ev-id">
+            <div class="form-grid">
+              <!-- Título -->
+              <div class="form-group full">
+                <label class="form-label">Título del evento <span class="req">*</span></label>
+                <input type="text" id="ev-titulo" class="form-input" placeholder="Ej: Capacitación Institucional" maxlength="200">
+              </div>
+              <!-- Fecha inicio -->
+              <div class="form-group">
+                <label class="form-label">Fecha y hora de inicio <span class="req">*</span></label>
+                <input type="datetime-local" id="ev-inicio" class="form-input">
+              </div>
+              <!-- Fecha fin -->
+              <div class="form-group">
+                <label class="form-label">Fecha y hora de finalización <span class="req">*</span></label>
+                <input type="datetime-local" id="ev-fin" class="form-input">
+              </div>
+              <!-- Sede -->
+              <div class="form-group">
+                <label class="form-label">Sede</label>
+                <select id="ev-sede" class="form-input form-select">
+                  <option value="">Seleccionar sede...</option>
+                  <option value="1">Cúcuta</option>
+                  <option value="2">Pamplona</option>
+                  <option value="3">Ocaña</option>
+                  <option value="4">Todas las sedes</option>
+                </select>
+              </div>
+              <!-- Color -->
+              <div class="form-group">
+                <label class="form-label">Color del evento</label>
+                <div class="color-row">
+                  <input type="color" id="ev-color" value="#1D6FA4" class="form-input" style="display:none">
+                  <div class="color-presets">
+                    <div class="color-preset sel" style="background:#1D6FA4" data-color="#1D6FA4" onclick="setColor('#1D6FA4',this)"></div>
+                    <div class="color-preset" style="background:#0D9276" data-color="#0D9276" onclick="setColor('#0D9276',this)"></div>
+                    <div class="color-preset" style="background:#7C3AED" data-color="#7C3AED" onclick="setColor('#7C3AED',this)"></div>
+                  </div>
+                </div>
+              </div>
+              <!-- Descripción -->
+              <div class="form-group full">
+                <label class="form-label">Descripción</label>
+                <div id="ev-desc-editor"></div>
+              </div>
+            </div>
+            <!-- Actions -->
+            <div class="form-actions" id="form-actions">
+              <button class="btn btn-primary btn-lg" onclick="adm.saveEvent()">
+                <i class="fa-solid fa-floppy-disk"></i> Guardar Evento
+              </button>
+              <button class="btn btn-secondary btn-lg" onclick="adm.go('eventos')">
+                <i class="fa-solid fa-xmark"></i> Cancelar
+              </button>
+              <button class="btn btn-secondary btn-lg" id="btn-duplicar" style="display:none" onclick="adm.duplicar()">
+                <i class="fa-solid fa-copy"></i> Duplicar
+              </button>
+              <button class="btn btn-danger btn-lg" id="btn-eliminar" style="display:none" onclick="adm.confirmarEliminar()">
+                <i class="fa-solid fa-trash"></i> Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS ────────────────────────────────────────────── -->
+      <div id="page-settings" style="display:none">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-gear" style="color:var(--primary)"></i> &nbsp;Configuración</h3>
+          </div>
+          <div class="card-body">
+            <div class="settings-section">
+              <h4>Información de la empresa</h4>
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label">Nombre de la empresa</label>
+                <input type="text" id="cfg-nombre" class="form-input" placeholder="NEUROCOOP">
+              </div>
+            </div>
+            <div class="settings-section">
+              <h4>Colores corporativos</h4>
+              <div style="display:flex;gap:24px;flex-wrap:wrap">
+                <div class="form-group">
+                  <label class="form-label">Color primario</label>
+                  <div class="color-input-row">
+                    <input type="color" id="cfg-color1" class="color-picker" value="#F97316">
+                    <input type="text" id="cfg-color1-txt" class="form-input" style="width:110px" value="#F97316">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Color secundario</label>
+                  <div class="color-input-row">
+                    <input type="color" id="cfg-color2" class="color-picker" value="#EA580C">
+                    <input type="text" id="cfg-color2-txt" class="form-input" style="width:110px" value="#EA580C">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <h4>Logo de la empresa</h4>
+              <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+                <img src="/Logos.png" alt="Logo actual" id="cfg-logo-preview" style="height:48px;object-fit:contain;border:1px solid var(--border);border-radius:var(--r-sm);padding:4px">
+                <div>
+                  <button class="btn btn-secondary" onclick="document.getElementById('cfg-logo-input').click()">
+                    <i class="fa-solid fa-upload"></i> Cambiar logo
+                  </button>
+                  <input type="file" id="cfg-logo-input" accept=".png,.jpg,.jpeg,.svg" style="display:none" onchange="adm.uploadLogo(this)">
+                  <div style="font-size:11px;color:var(--text3);margin-top:4px">PNG, JPG o SVG recomendado</div>
+                </div>
+              </div>
+            </div>
+            <div class="settings-section">
+              <h4>Seguridad</h4>
+              <div class="form-group" style="max-width:320px">
+                <label class="form-label">Nueva contraseña de administrador</label>
+                <div style="position:relative">
+                  <input type="password" id="cfg-pass" class="form-input" placeholder="Mínimo 6 caracteres">
+                </div>
+                <div style="font-size:11px;color:var(--text3);margin-top:4px">Dejar vacío para mantener la contraseña actual</div>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-lg" onclick="adm.saveSettings()">
+              <i class="fa-solid fa-floppy-disk"></i> Guardar Configuración
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /admin-content -->
+  </div><!-- /admin-main -->
+</div><!-- /admin-app -->
+
+<!-- Loader -->
+<div id="adm-loader"><div class="spinner"></div></div>
+
+<!-- Toasts -->
+<div id="adm-toasts"></div>
+
+<!-- Quill.js -->
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<script src="/js/admin.js"></script>
+</body>
+</html>
