@@ -12,6 +12,38 @@ const requireAuth = (req, res, next) => {
   res.status(401).json({ success: false, error: 'No autorizado' });
 };
 
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOGIN_LOCKOUT_MS   = 15 * 60 * 1000;
+const loginAttempts = new Map();
+
+const loginLimiter = (req, res, next) => {
+  const ip = req.ip;
+  const now = Date.now();
+  const entry = loginAttempts.get(ip);
+  if (entry && entry.lockedUntil > now) {
+    const waitMin = Math.ceil((entry.lockedUntil - now) / 60000);
+    return res.status(429).json({ success: false, error: `Demasiados intentos. Intente de nuevo en ${waitMin} minuto(s).` });
+  }
+  next();
+};
+
+function registerLoginFailure(ip) {
+  let entry = loginAttempts.get(ip);
+  if (!entry) {
+    entry = { count: 0, lockedUntil: 0 };
+    loginAttempts.set(ip, entry);
+  }
+  entry.count += 1;
+  if (entry.count >= MAX_LOGIN_ATTEMPTS) {
+    entry.lockedUntil = Date.now() + LOGIN_LOCKOUT_MS;
+    entry.count = 0;
+  }
+}
+
+function clearLoginFailures(ip) {
+  loginAttempts.delete(ip);
+}
+
 const ALLOWED_TYPES = new Set([
   'application/pdf',
   'application/msword',
@@ -42,12 +74,15 @@ router.get('/check-auth', (req, res) => {
   res.json({ authenticated: !!(req.session && req.session.adminAuth) });
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', loginLimiter, (req, res) => {
   try {
     const { password } = req.body;
     const row = db.prepare("SELECT valor FROM configuracion WHERE clave = 'password_hash'").get();
-    if (!row || !bcrypt.compareSync(password, row.valor))
+    if (!row || !bcrypt.compareSync(password, row.valor)) {
+      registerLoginFailure(req.ip);
       return res.status(401).json({ success: false, error: 'Contraseña incorrecta' });
+    }
+    clearLoginFailures(req.ip);
     req.session.adminAuth = true;
     res.json({ success: true });
   } catch (err) {

@@ -4,10 +4,9 @@ from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
 
 presentation = Presentation()
-slide_layout = presentation.slide_layouts[5]  # Blank layout
+slide_layout = presentation.slide_layouts[5]
 slide = presentation.slides.add_slide(slide_layout)
 
-# Title
 title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.3), Inches(9), Inches(1))
 title_tf = title_box.text_frame
 title_tf.text = 'Cómo usar la aplicación Calendario'
@@ -21,7 +20,6 @@ subtitle_tf.paragraphs[0].font.size = Pt(24)
 subtitle_tf.paragraphs[0].font.italic = True
 subtitle_tf.paragraphs[0].font.color.rgb = RGBColor(11, 120, 209)
 
-# Users section
 users_box = slide.shapes.add_textbox(Inches(0.4), Inches(1.9), Inches(4.4), Inches(5.4))
 users_tf = users_box.text_frame
 users_tf.word_wrap = True
@@ -45,7 +43,6 @@ for point in users_points:
     p.font.size = Pt(18)
     p.space_after = Pt(6)
 
-# Administrators section
 admin_box = slide.shapes.add_textbox(Inches(5), Inches(1.9), Inches(4.4), Inches(5.4))
 admin_tf = admin_box.text_frame
 admin_tf.word_wrap = True
@@ -69,7 +66,6 @@ for point in admin_points:
     p.font.size = Pt(18)
     p.space_after = Pt(6)
 
-# Speaker notes
 notes = slide.notes_slide.notes_text_frame
 notes.text = (
     'Objetivo: explicar el uso principal del Calendario para usuarios y administradores.\n'

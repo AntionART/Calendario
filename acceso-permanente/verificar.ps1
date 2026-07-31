@@ -15,7 +15,6 @@ Write-Host "  ESTADO DE SERVICIOS - CALENDARIO NEUROCOOP" -ForegroundColor Cyan
 Write-Host "  ═══════════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
 
-# Leer config guardada
 $cfgFile = "$SCRIPT_DIR\config.json"
 $domain = "(no configurado)"
 $tunnelName = "(no configurado)"

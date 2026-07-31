@@ -16,17 +16,14 @@ $staticDomain = Read-Host "  Dominio estatico (ej: magical-hen.ngrok-free.app)"
 if (-not $staticDomain) { exit }
 $staticDomain = $staticDomain.Trim()
 
-# Update ngrok.yml to use static domain
 $cfg = Get-Content $ngrokCfg -Raw
 $newCfg = "version: `"3`"`nagent:`n    authtoken: 3BV28FWJ66E9lsT4jX8Yvg7jCtW_6waSNTq8vkbaLprRWQggt`n`ntunnels:`n  calendario:`n    proto: http`n    addr: 8765`n    domain: $staticDomain`n"
 $newCfg | Set-Content $ngrokCfg -Encoding utf8
 Write-Host "  [OK] Config actualizado" -ForegroundColor Green
 
-# Update startup script
 $ngrokStartup = "@echo off`ntimeout /t 5 /nobreak >nul`nstart `"`" /min `"C:\ngrok\ngrok.exe`" start calendario"
 $ngrokStartup | Set-Content "$startupDir\calendario-tunel.bat" -Encoding ascii
 
-# Restart ngrok with static domain
 Stop-Process -Name ngrok -Force -ErrorAction SilentlyContinue
 Start-Sleep -Seconds 2
 Stop-Process -Name node -Force -ErrorAction SilentlyContinue

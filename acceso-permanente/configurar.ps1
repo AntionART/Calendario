@@ -24,7 +24,6 @@ function INFO($t) { Write-Host "  [i] $t" -ForegroundColor White }
 function WARN($t) { Write-Host "  [!] $t" -ForegroundColor Yellow }
 function ASK($t)  { return (Read-Host "  $t") }
 
-# ── Bienvenida ───────────────────────────────────────────────────────────────
 Clear-Host
 Write-Host ""
 Write-Host "  =============================================================" -ForegroundColor Cyan
@@ -60,7 +59,6 @@ if ($ready -notin @("s","S","si","SI","y","Y","yes")) {
     exit
 }
 
-# ── Verificar cloudflared ────────────────────────────────────────────────────
 if (-not (Test-Path $CF_EXE)) {
     ERRX "cloudflared.exe no encontrado en: $CF_EXE"
 }
@@ -69,7 +67,6 @@ Copy-Item $CF_EXE "$CF_INST_DIR\cloudflared.exe" -Force
 $CF_BIN = "$CF_INST_DIR\cloudflared.exe"
 OK "cloudflared copiado a $CF_INST_DIR"
 
-# ── PASO 1: Login ─────────────────────────────────────────────────────────────
 Title "PASO 1 de 5 - Autenticacion con Cloudflare"
 INFO "Se abrira el navegador. Inicie sesion y seleccione su dominio."
 Write-Host ""
@@ -79,7 +76,6 @@ Read-Host "  Presione ENTER para abrir el navegador"
 if ($LASTEXITCODE -ne 0) { ERRX "Fallo la autenticacion. Complete el proceso en el navegador." }
 OK "Autenticacion completada"
 
-# ── PASO 2: Crear tunel ───────────────────────────────────────────────────────
 Title "PASO 2 de 5 - Creando tunel permanente"
 $tunnelName = ASK "Nombre del tunel (solo letras y guiones, ej: calendario-neurocoop)"
 if (-not $tunnelName) { $tunnelName = "calendario-neurocoop" }
@@ -108,7 +104,6 @@ if (-not $tunnelId) {
 if (-not $tunnelId) { ERRX "UUID del tunel no disponible." }
 OK "Tunel: $tunnelName  (ID: $tunnelId)"
 
-# ── PASO 3: Configurar dominio ────────────────────────────────────────────────
 Title "PASO 3 de 5 - Asignando dominio permanente"
 INFO "Ejemplo: si su dominio es neurocoop.com escriba calendario.neurocoop.com"
 Write-Host ""
@@ -123,7 +118,6 @@ if ($LASTEXITCODE -ne 0) {
 }
 OK "DNS configurado: https://$domain -> tunel $tunnelName"
 
-# ── PASO 4: Crear config y copiar archivos ────────────────────────────────────
 Title "PASO 4 de 5 - Generando configuracion del servicio"
 
 $credSrc = "$CF_USR_DIR\$tunnelId.json"
@@ -136,7 +130,6 @@ if (-not $credSrc -or -not (Test-Path $credSrc)) {
 }
 OK "Credenciales: $credSrc"
 
-# Crear YAML via array de lineas para evitar problemas de sintaxis PS
 New-Item -Path $CF_SYS_DIR -ItemType Directory -Force | Out-Null
 
 $cfgLines = @(
@@ -170,10 +163,8 @@ OK "Credenciales copiadas al perfil del sistema"
 } | ConvertTo-Json | Set-Content "$SCRIPT_DIR\config.json" -Encoding utf8
 OK "Configuracion guardada en config.json"
 
-# ── PASO 5: Instalar servicios ────────────────────────────────────────────────
 Title "PASO 5 de 5 - Instalando servicios de Windows"
 
-# Cloudflare Tunnel como Servicio Windows
 INFO "Instalando Cloudflare Tunnel como servicio de Windows..."
 
 $existingSvc = Get-Service "Cloudflare Tunnel" -ErrorAction SilentlyContinue
@@ -191,7 +182,6 @@ if (-not $cfSvcOk) { ERRX "No se pudo instalar el servicio Cloudflare Tunnel." }
 Set-Service "Cloudflare Tunnel" -StartupType Automatic
 OK "Servicio Cloudflare Tunnel instalado (inicio automatico)"
 
-# Node.js como Tarea Programada
 INFO "Registrando servidor Node.js como tarea programada..."
 
 $nodeBin = (Get-Command node.exe -ErrorAction SilentlyContinue).Source
@@ -228,7 +218,6 @@ Register-ScheduledTask `
 
 OK "Tarea programada registrada: inicio automatico con Windows"
 
-# ── Iniciar servicios ahora ───────────────────────────────────────────────────
 Title "Iniciando servicios"
 
 Stop-Process -Name node -Force -ErrorAction SilentlyContinue
@@ -250,7 +239,6 @@ for ($i = 1; $i -le 6; $i++) {
 }
 $cfOk = (Get-Service "Cloudflare Tunnel" -ErrorAction SilentlyContinue).Status -eq "Running"
 
-# ── Resumen ───────────────────────────────────────────────────────────────────
 Clear-Host
 Write-Host ""
 Write-Host "  =============================================================" -ForegroundColor Green
