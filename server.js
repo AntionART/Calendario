@@ -5,6 +5,7 @@ const crypto  = require('crypto');
 const os      = require('os');
 const path    = require('path');
 const fs      = require('fs');
+const { checkLicense, blockedPage } = require('./license');
 
 const app = express();
 
@@ -16,7 +17,14 @@ const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toSt
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
+let licenseState = checkLicense();
+setInterval(() => { licenseState = checkLicense(); }, 60 * 60 * 1000);
+
 app.set('trust proxy', 1);
+app.use((req, res, next) => {
+  if (licenseState.valid) return next();
+  res.status(403).send(blockedPage(licenseState.reason));
+});
 app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
