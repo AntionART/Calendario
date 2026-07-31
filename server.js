@@ -1,6 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const helmet  = require('helmet');
+const crypto  = require('crypto');
 const os      = require('os');
 const path    = require('path');
 const fs      = require('fs');
@@ -10,16 +11,18 @@ const app = express();
 const PREFERRED_PORT = Number(process.env.PORT) || 8765;
 const ADMIN_PATH     = '/gestion';
 const USE_TUNNEL     = process.argv.includes('--internet');
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
+app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'NC_s3cr3t_K#9mP!2024',
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: { secure: false, httpOnly: true, maxAge: 8 * 60 * 60 * 1000 }

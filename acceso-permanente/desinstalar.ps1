@@ -23,7 +23,6 @@ if ($confirm -notin @("s","S","si","SI")) {
 
 Write-Host ""
 
-# 1. Detener y eliminar servicio Cloudflare Tunnel
 Write-Host "  Deteniendo servicio Cloudflare Tunnel..." -ForegroundColor Gray
 Stop-Service "Cloudflare Tunnel" -Force -ErrorAction SilentlyContinue
 Start-Sleep -Seconds 2
@@ -33,7 +32,6 @@ if (Test-Path $CF_BIN) {
     Write-Host "  [OK] Servicio Cloudflare Tunnel eliminado" -ForegroundColor Green
 }
 
-# 2. Eliminar tunel de Cloudflare (opcional)
 $cfgFile = "$SCRIPT_DIR\config.json"
 if (Test-Path $cfgFile) {
     $cfg = Get-Content $cfgFile -Raw | ConvertFrom-Json
@@ -47,13 +45,11 @@ if (Test-Path $cfgFile) {
     }
 }
 
-# 3. Eliminar tarea programada Node.js
 Write-Host "  Eliminando tarea programada '$TASK_NAME'..." -ForegroundColor Gray
 Stop-ScheduledTask -TaskName $TASK_NAME -ErrorAction SilentlyContinue
 Unregister-ScheduledTask -TaskName $TASK_NAME -Confirm:$false -ErrorAction SilentlyContinue
 Write-Host "  [OK] Tarea programada eliminada" -ForegroundColor Green
 
-# 4. Limpiar archivos del sistema
 Write-Host "  Limpiando archivos del sistema..." -ForegroundColor Gray
 Remove-Item $CF_SYS_DIR -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item $CF_INST_DIR -Recurse -Force -ErrorAction SilentlyContinue

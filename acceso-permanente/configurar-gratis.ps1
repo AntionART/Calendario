@@ -23,7 +23,6 @@ function INFO($t) { Write-Host "  [i] $t" -ForegroundColor White }
 function WARN($t) { Write-Host "  [!] $t" -ForegroundColor Yellow }
 function ASK($t)  { return (Read-Host "  $t") }
 
-# ── Bienvenida ───────────────────────────────────────────────────────────────
 Clear-Host
 Write-Host ""
 Write-Host "  =============================================================" -ForegroundColor Cyan
@@ -58,7 +57,6 @@ if ($ready -notin @("s","S","si","SI","y","Y")) {
     exit
 }
 
-# ── PASO 1: Instalar Tailscale ────────────────────────────────────────────────
 Title "PASO 1 de 4 - Instalando Tailscale"
 
 $tsInstalled = Test-Path $TS_EXE
@@ -87,7 +85,6 @@ if ($tsInstalled) {
     OK "Tailscale instalado como servicio de Windows (inicio automatico)"
 }
 
-# ── PASO 2: Login ─────────────────────────────────────────────────────────────
 Title "PASO 2 de 4 - Autenticacion con Tailscale"
 INFO "Se abrira el navegador. Inicie sesion con su cuenta de Tailscale."
 INFO "Si ya esta autenticado, el proceso sera inmediato."
@@ -96,7 +93,6 @@ Read-Host "  Presione ENTER para abrir el navegador"
 
 & $TS_EXE login 2>&1 | Write-Host
 
-# Esperar autenticacion
 INFO "Esperando que complete el login..."
 $authOk = $false
 for ($i = 0; $i -lt 30; $i++) {
@@ -119,14 +115,12 @@ if (-not $authOk) {
 }
 OK "Autenticacion con Tailscale completada"
 
-# ── PASO 3: Activar Funnel ────────────────────────────────────────────────────
 Title "PASO 3 de 4 - Activando Funnel (acceso publico)"
 
 INFO "Habilitando Tailscale Funnel en puerto $PORT..."
 INFO "Esto hace el calendario accesible desde cualquier lugar sin VPN."
 Write-Host ""
 
-# Habilitar funnel
 $funnelOut = (& $TS_EXE funnel --bg $PORT 2>&1) -join "`n"
 Write-Host $funnelOut
 
@@ -137,7 +131,6 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host $serveOut
 }
 
-# Obtener URL del dispositivo
 Start-Sleep -Seconds 3
 $tsStatusRaw = (& $TS_EXE status 2>&1) -join "`n"
 $dnsName = [regex]::Match($tsStatusRaw, 'DNS name:\s+(\S+)').Groups[1].Value
@@ -155,7 +148,6 @@ if ($dnsName) {
     INFO "O revise el panel en https://login.tailscale.com/admin/machines"
 }
 
-# ── PASO 4: Instalar Node.js como Tarea Programada ───────────────────────────
 Title "PASO 4 de 4 - Configurando servidor Node.js"
 INFO "Registrando Node.js para inicio automatico con Windows..."
 
@@ -193,7 +185,6 @@ Register-ScheduledTask `
 
 OK "Tarea programada registrada: inicio automatico con Windows"
 
-# Iniciar servidor Node.js ahora
 Stop-Process -Name node -Force -ErrorAction SilentlyContinue
 Start-Sleep -Seconds 2
 Start-ScheduledTask -TaskName $TASK_NAME
@@ -206,7 +197,6 @@ for ($i = 1; $i -le 6; $i++) {
     Start-Sleep -Seconds 2
 }
 
-# Guardar config
 @{
     metodo    = "tailscale-funnel"
     url       = $tsUrl
@@ -214,7 +204,6 @@ for ($i = 1; $i -le 6; $i++) {
     instalado = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
 } | ConvertTo-Json | Set-Content "$SCRIPT_DIR\config-gratis.json" -Encoding utf8
 
-# ── Resumen ───────────────────────────────────────────────────────────────────
 Clear-Host
 Write-Host ""
 Write-Host "  =============================================================" -ForegroundColor Green
