@@ -29,7 +29,8 @@ contextBridge.exposeInMainWorld('calendarioAdmin', {
   tunnelStop: () => ipcRenderer.invoke('tunnel:stop'),
   tunnelStatus: () => ipcRenderer.invoke('tunnel:status'),
 
-  openBrowser: () => ipcRenderer.invoke('open:browser'),
+  openPublicCalendar: () => ipcRenderer.invoke('open:publicCalendar'),
+  openAdminPanel: () => ipcRenderer.invoke('open:adminPanel'),
   chooseFolder: () => ipcRenderer.invoke('dialog:chooseFolder'),
 
   linksGet: () => ipcRenderer.invoke('links:get'),

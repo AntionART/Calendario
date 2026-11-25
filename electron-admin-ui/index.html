@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';">
-<title>Panel Calendario NEUROCOOP</title>
+<title>Panel de Control - Calendario NEUROCOOP</title>
 <link rel="stylesheet" href="css/panel.css">
 </head>
 <body>
@@ -13,126 +13,168 @@
         <div class="brand-dot"></div>
         <div>
           <div class="brand-title">NEUROCOOP</div>
-          <div class="brand-sub">Panel de administracion</div>
+          <div class="brand-sub">Calendario Corporativo</div>
         </div>
       </div>
       <nav class="nav">
-        <button class="nav-item active" data-view="estado">Estado</button>
-        <button class="nav-item" data-view="logs">Logs</button>
-        <button class="nav-item" data-view="backups">Copias de seguridad</button>
-        <button class="nav-item" data-view="config">Configuracion</button>
+        <button class="nav-item active" data-view="estado">Control Principal</button>
+        <button class="nav-item" data-view="backups">Copias de Seguridad</button>
+        <button class="nav-item" data-view="logs">Registros / Logs</button>
+        <button class="nav-item" data-view="config">Ajustes</button>
       </nav>
+      <div class="sidebar-footer">
+        <div class="version-tag">v2.0 • Producción</div>
+      </div>
     </aside>
 
     <main class="content">
 
+      <!-- VISTA ESTADO / CONTROL PRINCIPAL -->
       <section id="view-estado" class="view active">
-        <h1>Estado del servidor</h1>
+        <div class="header-section">
+          <h1>Panel de Control de Servicios</h1>
+          <p class="subtitle">Supervisión en tiempo real del servidor y accesos institucionales</p>
+        </div>
+
         <div class="card status-card">
-          <div class="status-row">
-            <span class="status-dot" id="statusDot"></span>
-            <span id="statusText">Consultando...</span>
+          <div class="status-header">
+            <div class="status-indicator">
+              <span class="status-dot" id="statusDot"></span>
+              <span class="status-title" id="statusText">Comprobando servicio...</span>
+            </div>
+            <div class="status-meta">
+              <span>Puerto: <strong id="portText">8765</strong></span>
+              <span>Activo: <strong id="uptimeText">-</strong></span>
+            </div>
           </div>
-          <div class="status-row muted">
-            <span>Tiempo activo: <strong id="uptimeText">-</strong></span>
-            <span>Puerto: <strong id="portText">-</strong></span>
+
+          <div class="quick-actions">
+            <button class="btn btn-primary" id="btnOpenBrowser">
+              <span class="icon">📅</span> Abrir Calendario Público
+            </button>
+            <button class="btn btn-secondary" id="btnOpenAdmin">
+              <span class="icon">⚙️</span> Abrir Panel de Gestión
+            </button>
           </div>
-          <div class="btn-row">
-            <button class="btn btn-primary" id="btnStart">Iniciar</button>
-            <button class="btn btn-secondary" id="btnStop">Detener</button>
-            <button class="btn btn-secondary" id="btnRestart">Reiniciar</button>
-            <button class="btn btn-secondary" id="btnOpenBrowser">Abrir en navegador</button>
+
+          <div class="service-controls">
+            <button class="btn btn-action" id="btnStart">▶ Iniciar Servicio</button>
+            <button class="btn btn-action" id="btnRestart">🔄 Reiniciar Servicio</button>
+            <button class="btn btn-action btn-danger" id="btnStop">⏹ Detener Servicio</button>
+          </div>
+        </div>
+
+        <div class="grid-two">
+          <div class="card">
+            <h2>Acceso Remoto (Túnel Seguro)</h2>
+            <div class="tunnel-box">
+              <div class="status-row muted" id="tunnelStatus">Comprobando estado...</div>
+              <div class="btn-row" style="margin-top:12px;">
+                <button class="btn btn-secondary" id="btnTunnelStart">Activar Acceso Remoto</button>
+                <button class="btn btn-secondary" id="btnTunnelStop">Detener</button>
+              </div>
+            </div>
+            <p class="hint">Permite a los coordinadores y sedes remotas acceder de forma cifrada mediante Ngrok.</p>
+          </div>
+
+          <div class="card">
+            <h2>Respaldo Rápido de Emergencia</h2>
+            <p class="hint">Guarda una copia física instantánea de la base de datos sin interrumpir a los usuarios.</p>
+            <div class="btn-row" style="margin-top:16px;">
+              <button class="btn btn-secondary" id="btnQuickBackup">💾 Generar Copia Ahora</button>
+              <button class="btn btn-secondary" id="btnGoBackups">Ver Todas las Copias</button>
+            </div>
           </div>
         </div>
 
         <div class="card">
-          <h2>Enlaces de acceso</h2>
+          <h2>Enlaces de Red para el Personal</h2>
           <table class="links-table" id="linksTable">
-            <tbody><tr><td colspan="3">Consultando...</td></tr></tbody>
+            <tbody><tr><td colspan="3">Detectando direcciones de red...</td></tr></tbody>
           </table>
         </div>
-
-        <div class="card">
-          <h2>Acceso remoto (tunel)</h2>
-          <div class="status-row muted" id="tunnelStatus">Detenido</div>
-          <div class="btn-row">
-            <button class="btn btn-primary" id="btnTunnelStart">Activar tunel</button>
-            <button class="btn btn-secondary" id="btnTunnelStop">Detener tunel</button>
-          </div>
-          <p class="hint">Requiere ngrok instalado en C:\ngrok\ngrok.exe con un tunel llamado "calendario" configurado.</p>
-        </div>
       </section>
 
+      <!-- VISTA LOGS -->
       <section id="view-logs" class="view">
-        <h1>Logs del servidor</h1>
+        <div class="header-section">
+          <h1>Registro de Actividad del Servidor</h1>
+          <p class="subtitle">Diagnóstico y eventos internos en tiempo real</p>
+        </div>
         <div class="card">
-          <div class="btn-row">
-            <button class="btn btn-secondary" id="btnRefreshLogs">Actualizar</button>
+          <div class="btn-row" style="margin-bottom:12px;">
+            <button class="btn btn-secondary" id="btnRefreshLogs">Actualizar Registros</button>
           </div>
-          <pre class="log-box" id="logBox">Sin datos aun.</pre>
+          <pre class="log-box" id="logBox">Cargando...</pre>
         </div>
       </section>
 
+      <!-- VISTA BACKUPS -->
       <section id="view-backups" class="view">
-        <h1>Copias de seguridad</h1>
+        <div class="header-section">
+          <h1>Gestor de Copias de Seguridad</h1>
+          <p class="subtitle">Respaldos locales y restauración segura ante incidentes</p>
+        </div>
         <div class="card">
           <div class="field-row">
-            <label>Carpeta de backups</label>
+            <label>Directorio de Respaldos Locales</label>
             <div class="field-inline">
               <input type="text" id="backupFolder" readonly>
-              <button class="btn btn-secondary" id="btnChooseFolder">Elegir...</button>
+              <button class="btn btn-secondary" id="btnChooseFolder">Cambiar...</button>
             </div>
           </div>
           <div class="btn-row">
-            <button class="btn btn-primary" id="btnCreateBackup">Crear copia ahora</button>
-            <button class="btn btn-secondary" id="btnExportAs">Exportar copia a otra carpeta...</button>
-            <button class="btn btn-secondary" id="btnImportRestore">Importar copia desde archivo...</button>
+            <button class="btn btn-primary" id="btnCreateBackup">Crear Copia de Seguridad</button>
+            <button class="btn btn-secondary" id="btnExportAs">Exportar a Memoria USB...</button>
+            <button class="btn btn-secondary" id="btnImportRestore">Restaurar Copia Externa (.db)...</button>
           </div>
-          <p class="hint">"Exportar" guarda una copia nueva donde vos elijas (ej. un USB). "Importar" reemplaza la base de datos actual por un archivo .db que elijas (por ejemplo, uno traido de otro equipo o de un backup externo).</p>
         </div>
         <div class="card">
-          <h2>Copias existentes</h2>
+          <h2>Historial de Respaldos Locales</h2>
           <table class="backup-table">
-            <thead><tr><th>Archivo</th><th>Fecha</th><th>Tamano</th><th></th></tr></thead>
-            <tbody id="backupList"><tr><td colspan="4">Cargando...</td></tr></tbody>
+            <thead><tr><th>Archivo</th><th>Fecha y Hora</th><th>Tamaño</th><th>Acción</th></tr></thead>
+            <tbody id="backupList"><tr><td colspan="4">Cargando historial...</td></tr></tbody>
           </table>
         </div>
       </section>
 
+      <!-- VISTA CONFIGURACION -->
       <section id="view-config" class="view">
-        <h1>Configuracion</h1>
+        <div class="header-section">
+          <h1>Configuración del Sistema</h1>
+          <p class="subtitle">Parámetros de red y persistencia automática</p>
+        </div>
         <div class="card">
-          <h2>General</h2>
+          <h2>Arranque y Red</h2>
           <div class="field-row">
-            <label for="cfgPort">Puerto del servidor</label>
-            <input type="number" id="cfgPort" min="1024" max="65535">
+            <label for="cfgPort">Puerto de Escucha</label>
+            <input type="number" id="cfgPort" min="1024" max="65535" value="8765">
           </div>
           <div class="field-row checkbox-row">
             <input type="checkbox" id="cfgAutoLaunch">
-            <label for="cfgAutoLaunch">Iniciar automaticamente con Windows</label>
+            <label for="cfgAutoLaunch">Iniciar automáticamente con Windows al encender el servidor</label>
           </div>
           <div class="btn-row">
-            <button class="btn btn-primary" id="btnSaveConfig">Guardar</button>
+            <button class="btn btn-primary" id="btnSaveConfig">Guardar Cambios</button>
           </div>
-          <p class="hint">El cambio de puerto se aplica al reiniciar el servidor.</p>
         </div>
 
         <div class="card">
-          <h2>Backups automaticos</h2>
+          <h2>Copias Automáticas Programadas</h2>
           <div class="field-row checkbox-row">
             <input type="checkbox" id="cfgBackupEnabled">
-            <label for="cfgBackupEnabled">Activar copias automaticas</label>
+            <label for="cfgBackupEnabled">Habilitar copias periódicas de seguridad</label>
           </div>
           <div class="field-row">
-            <label for="cfgBackupInterval">Intervalo (horas)</label>
-            <input type="number" id="cfgBackupInterval" min="1" max="168">
+            <label for="cfgBackupInterval">Frecuencia (cada cuantas horas)</label>
+            <input type="number" id="cfgBackupInterval" min="1" max="168" value="24">
           </div>
           <div class="field-row">
-            <label for="cfgBackupKeep">Copias a conservar</label>
-            <input type="number" id="cfgBackupKeep" min="1" max="365">
+            <label for="cfgBackupKeep">Número de copias a conservar</label>
+            <input type="number" id="cfgBackupKeep" min="1" max="365" value="14">
           </div>
           <div class="btn-row">
-            <button class="btn btn-primary" id="btnSaveBackupSchedule">Guardar programacion</button>
+            <button class="btn btn-primary" id="btnSaveBackupSchedule">Aplicar Programación</button>
           </div>
         </div>
       </section>

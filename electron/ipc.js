@@ -12,7 +12,7 @@ function registerIpcHandlers(mainWindow) {
   ipcMain.handle('server:restart', () => serverProcess.restart());
   ipcMain.handle('server:status', () => serverProcess.getStatus());
 
-  ipcMain.handle('logs:tail', (_e, n) => logger.getLastLines(n || 200));
+  ipcMain.handle('logs:tail', (_e, n) => logger.getLastLines(n || 250));
 
   ipcMain.handle('backup:create', (_e, folder) => backupManager.createBackup(folder));
   ipcMain.handle('backup:list', (_e, folder) => backupManager.listBackups(folder));
@@ -53,9 +53,16 @@ function registerIpcHandlers(mainWindow) {
   ipcMain.handle('tunnel:stop', () => tunnelManager.stop());
   ipcMain.handle('tunnel:status', () => tunnelManager.getStatus());
 
-  ipcMain.handle('open:browser', () => {
+  ipcMain.handle('open:publicCalendar', () => {
     const status = serverProcess.getStatus();
-    if (status.port) shell.openExternal(`http://localhost:${status.port}/gestion`);
+    const port = status.port || 8765;
+    shell.openExternal(`http://localhost:${port}/`);
+  });
+
+  ipcMain.handle('open:adminPanel', () => {
+    const status = serverProcess.getStatus();
+    const port = status.port || 8765;
+    shell.openExternal(`http://localhost:${port}/gestion`);
   });
 
   ipcMain.handle('links:get', async () => {
@@ -63,7 +70,7 @@ function registerIpcHandlers(mainWindow) {
     const tunnel = await tunnelManager.getStatus();
     return {
       running: status.running,
-      port: status.port,
+      port: status.port || 8765,
       localIPs: serverProcess.getLocalIPs(),
       tunnelRunning: tunnel.running,
       tunnelUrl: tunnel.url
