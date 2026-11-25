@@ -283,9 +283,6 @@ def closing_slide(prs, title, subtitle):
     return slide
 
 
-# ============================================================
-# INSTALAR.pptx
-# ============================================================
 
 def build_instalar():
     prs = new_presentation()
@@ -366,9 +363,6 @@ def build_instalar():
     print('Generado:', out_path)
 
 
-# ============================================================
-# MANUAL-USO.pptx
-# ============================================================
 
 def build_manual_uso():
     prs = new_presentation()

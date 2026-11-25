@@ -49,7 +49,6 @@ function start(configName = 'calendario') {
     });
 
     const settleTimer = setTimeout(() => {
-      // Sigue vivo pasado el margen de arranque: lo damos por exitoso.
       resolve({ running: true, url: null });
     }, 3000);
 

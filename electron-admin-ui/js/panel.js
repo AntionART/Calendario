@@ -25,7 +25,6 @@ function formatDate(d) {
   return new Date(d).toLocaleString('es-CO');
 }
 
-// --- Navegacion ---
 document.querySelectorAll('.nav-item').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -37,7 +36,6 @@ document.querySelectorAll('.nav-item').forEach(btn => {
   });
 });
 
-// --- Estado del servidor ---
 function renderStatus(status) {
   const dot = $('statusDot');
   dot.classList.remove('on', 'off');
@@ -65,7 +63,6 @@ $('btnOpenBrowser').addEventListener('click', () => api.openBrowser());
 
 setInterval(refreshStatus, 3000);
 
-// --- Tunel ---
 async function refreshTunnel() {
   const status = await api.tunnelStatus();
   $('tunnelStatus').textContent = status.running
@@ -93,7 +90,6 @@ $('btnTunnelStop').addEventListener('click', async () => {
 
 setInterval(refreshTunnel, 5000);
 
-// --- Enlaces de acceso ---
 function linkRow(label, url) {
   return `
     <tr>
@@ -139,7 +135,6 @@ async function refreshLinks() {
 
 setInterval(refreshLinks, 5000);
 
-// --- Logs ---
 async function refreshLogs() {
   const lines = await api.logsTail(300);
   const box = $('logBox');
@@ -149,7 +144,6 @@ async function refreshLogs() {
 
 $('btnRefreshLogs').addEventListener('click', refreshLogs);
 
-// --- Backups ---
 async function refreshBackups() {
   const cfg = await api.configGet();
   $('backupFolder').value = cfg.backupFolder;
@@ -232,7 +226,6 @@ $('btnImportRestore').addEventListener('click', async () => {
   refreshBackups();
 });
 
-// --- Configuracion ---
 async function loadConfig() {
   const cfg = await api.configGet();
   $('cfgPort').value = cfg.port;
@@ -260,7 +253,6 @@ $('btnSaveBackupSchedule').addEventListener('click', async () => {
   alert('Programacion de backups guardada.');
 });
 
-// --- Init ---
 refreshStatus();
 refreshTunnel();
 refreshLinks();

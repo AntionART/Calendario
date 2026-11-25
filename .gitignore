@@ -1,4 +1,3 @@
-.claude/
 __pycache__/
 
 # Empaquetado de escritorio (generados por npm run build:desktop)

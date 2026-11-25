@@ -12,7 +12,6 @@ function makeSquare(srcPath, destPath) {
   const src = PNG.sync.read(fs.readFileSync(srcPath));
   const size = Math.max(src.width, src.height);
   const square = new PNG({ width: size, height: size });
-  // fondo transparente
   square.data.fill(0);
   const offsetX = Math.floor((size - src.width) / 2);
   const offsetY = Math.floor((size - src.height) / 2);

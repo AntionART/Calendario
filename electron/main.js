@@ -30,7 +30,6 @@ if (!gotLock) {
   });
 
   app.on('window-all-closed', () => {
-    // La app vive en la bandeja del sistema; no se cierra al cerrar la ventana.
   });
 
   app.on('before-quit', async (e) => {

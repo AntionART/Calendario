@@ -11,7 +11,6 @@ function copyPublicAssets() {
   const jsDir = path.join(srcPublic, 'js');
   fs.cpSync(srcPublic, destPublic, {
     recursive: true,
-    // public/js/*.js ya fue generado (ofuscado) por build/obfuscate.js
     filter: (src) => !src.startsWith(jsDir)
   });
   console.log('Assets publicos copiados (excepto js/, ya ofuscado).');

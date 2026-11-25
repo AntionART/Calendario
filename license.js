@@ -58,12 +58,10 @@ function checkLicense() {
     return { valid: false, reason: 'Firma criptográfica de licencia inválida.' };
   }
 
-  // Validación de software y cliente
   if (payload.software !== 'Calendario NEUROCOOP') {
     return { valid: false, reason: 'La licencia no corresponde a este software.' };
   }
 
-  // Validación de hardware (si la licencia está atada a un equipo)
   if (payload.machine_id) {
     const currentGuid = getMachineGuid();
     if (currentGuid && payload.machine_id.toLowerCase() !== currentGuid) {
@@ -75,7 +73,6 @@ function checkLicense() {
     }
   }
 
-  // Validación de fecha de expiración
   if (payload.fecha_expiracion && payload.fecha_expiracion !== 'VITALICIA') {
     const exp = new Date(payload.fecha_expiracion + 'T23:59:59');
     if (!isNaN(exp) && exp < new Date()) {

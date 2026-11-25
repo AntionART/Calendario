@@ -45,7 +45,6 @@ function rmDirWithRetries(dir, tries = 5) {
       fs.rmSync(dir, { recursive: true, force: true });
       return true;
     } catch {
-      // el proceso hijo puede tardar en soltar el archivo del .db en Windows
     }
   }
   return !fs.existsSync(dir);
@@ -57,9 +56,6 @@ async function main() {
     process.exit(1);
   }
 
-  // La prueba de arranque corre sobre una COPIA temporal, nunca sobre dist-app/app-server
-  // directamente: el servidor de prueba crea su propio db/ al arrancar, y ese db/ nunca
-  // debe terminar dentro de lo que empaqueta electron-builder.
   fs.rmSync(VERIFY_TMP, { recursive: true, force: true });
   fs.cpSync(STAGE, VERIFY_TMP, { recursive: true });
 
@@ -91,8 +87,6 @@ async function main() {
     }
   }
 
-  // Guardia de seguridad: dist-app/app-server (lo que SI se empaqueta) nunca debe
-  // contener datos reales/de prueba. Si algo los creo ahi por error, el build se detiene.
   for (const forbidden of ['db', 'uploads']) {
     const p = path.join(STAGE, forbidden);
     if (fs.existsSync(p)) {
