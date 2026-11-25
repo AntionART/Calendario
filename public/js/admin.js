@@ -305,6 +305,41 @@ async function loadSettings() {
     txt.addEventListener('input',   () => { if (/^#[0-9A-F]{6}$/i.test(txt.value)) picker.value = txt.value; });
   });
   showPage('settings');
+  loadGithub();
+}
+
+async function loadGithub() {
+  const est = document.getElementById('gh-estado');
+  const lista = document.getElementById('gh-dias');
+  const r = await api('GET','/api/admin/respaldo-github');
+  if (!r.success) { est.textContent = 'No se pudo consultar la copia en GitHub.'; return; }
+  const g = r.data;
+  document.getElementById('gh-subir').disabled = !g.activo || g.enCurso;
+  let html;
+  if (!g.preparado) html = `<span style="color:#DC2626"><i class="fa-solid fa-circle-xmark"></i> No está preparado: falta el clon del repositorio en <code>${esc(g.repoLocal)}</code>.</span>`;
+  else if (g.apagado) html = `<span style="color:var(--text3)"><i class="fa-solid fa-circle-pause"></i> Apagada en este servidor.</span>`;
+  else if (g.ultimo && !g.ultimo.ok) html = `<span style="color:#DC2626"><i class="fa-solid fa-triangle-exclamation"></i> Falló la última subida: ${esc(g.ultimo.error)}</span>`;
+  else html = `<span style="color:#0D9276"><i class="fa-solid fa-circle-check"></i> Activa${g.enCurso ? ' — subiendo…' : g.pendiente ? ' — hoy pendiente' : ''}.</span>`;
+  if (g.remoto) html += ` &nbsp;<a href="${esc(g.remoto)}" target="_blank" rel="noopener">${esc(g.remoto.replace(/^https?:\/\//,''))}</a>`;
+  est.innerHTML = html;
+  if (!g.dias.length) { lista.innerHTML = g.preparado ? '<div style="font-size:13px;color:var(--text3)">Aún no hay días subidos.</div>' : ''; return; }
+  lista.innerHTML = g.dias.slice(0, 30).map(d => `
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--border);font-size:13px">
+      <strong style="width:100px">${esc(d.fecha)}</strong>
+      <span style="flex:1;color:var(--text3)">${d.eventos} eventos · ${d.archivos} archivos${d.noSubidos ? ' · <span style="color:#DC2626">no subidos: '+esc(d.noSubidos)+'</span>' : ''}</span>
+      <a class="btn btn-ghost btn-sm" href="/api/admin/respaldo-github/descargar?fecha=${encodeURIComponent(d.fecha)}"><i class="fa-solid fa-download"></i> ZIP</a>
+    </div>`).join('') + (g.dias.length > 30 ? `<div style="font-size:12px;color:var(--text3);padding-top:8px">… y ${g.dias.length - 30} días más en GitHub.</div>` : '');
+}
+
+async function subirGithub() {
+  const btn = document.getElementById('gh-subir');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subiendo...';
+  const r = await api('POST','/api/admin/respaldo-github/subir');
+  btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Subir ahora';
+  if (r.success) toast(r.data.subidos.length ? 'Respaldo de hoy subido a GitHub' : 'Hoy ya estaba en GitHub');
+  else toast(r.error || 'No se pudo subir','err');
+  loadGithub();
 }
 
 async function saveSettings() {
@@ -353,6 +388,7 @@ window.adm = {
   confirmarEliminar,
   saveSettings,
   uploadLogo,
+  subirGithub,
   logout: async function() {
     await api('POST','/api/admin/logout');
     location.reload();

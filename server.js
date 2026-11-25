@@ -6,13 +6,14 @@ const os      = require('os');
 const path    = require('path');
 const fs      = require('fs');
 const { checkLicense, blockedPage } = require('./license');
+const { getOrCreateSessionSecret } = require('./shared/configStore');
 
 const app = express();
 
 const PREFERRED_PORT = Number(process.env.PORT) || 8765;
 const ADMIN_PATH     = '/gestion';
 const USE_TUNNEL     = process.argv.includes('--internet');
-const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+const SESSION_SECRET = process.env.SESSION_SECRET || getOrCreateSessionSecret();
 
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
@@ -39,8 +40,9 @@ app.use(session({
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(uploadsDir));
 
-app.use('/api',       require('./routes/api'));
-app.use('/api/admin', require('./routes/adminApi'));
+app.use('/api',         require('./routes/api'));
+app.use('/api/admin',   require('./routes/adminApi'));
+app.use('/api/control', require('./routes/controlApi'));
 
 app.get(ADMIN_PATH, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
@@ -91,6 +93,8 @@ function tryListen(port, maxTries = 20) {
   const mid = `  ${ML}${H.repeat(W)}${MR}`;
   const bot = `  ${BL}${H.repeat(W)}${BR}`;
 
+  console.log('SERVER_READY port=' + PORT);
+  require('./respaldoGithub').iniciar();
   console.log('\n' + top);
   console.log(line('CALENDARIO NEUROCOOP'));
   console.log(mid);
@@ -130,7 +134,6 @@ function tryListen(port, maxTries = 20) {
   }
 
   console.log(mid);
-  console.log(line('Contrasena admin: neurocoop2024'));
-  console.log(line('Firewall: ejecute ABRIR-FIREWALL.bat'));
+  console.log(line('Contrasena admin: ver panel de administracion'));
   console.log(bot + '\n');
 })();

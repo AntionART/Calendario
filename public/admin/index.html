@@ -242,6 +242,20 @@
             </button>
           </div>
         </div>
+
+        <div class="card" style="margin-top:20px">
+          <div class="card-header">
+            <h3><i class="fa-brands fa-github" style="color:var(--primary)"></i> &nbsp;Copia en GitHub</h3>
+            <button class="btn btn-secondary btn-sm" id="gh-subir" onclick="adm.subirGithub()">
+              <i class="fa-solid fa-cloud-arrow-up"></i> Subir ahora
+            </button>
+          </div>
+          <div class="card-body">
+            <p style="font-size:13px;color:var(--text3);margin-bottom:12px">Cada noche, desde la 1:00 a. m., se sube a un repositorio privado de GitHub la base de datos completa del día, los adjuntos y el logo. Cada día se descarga en ZIP.</p>
+            <div id="gh-estado" style="font-size:13px;margin-bottom:12px"></div>
+            <div id="gh-dias"></div>
+          </div>
+        </div>
       </div>
 
     </div><!-- /admin-content -->

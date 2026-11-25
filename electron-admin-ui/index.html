@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';">
+<title>Panel Calendario NEUROCOOP</title>
+<link rel="stylesheet" href="css/panel.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <div>
+          <div class="brand-title">NEUROCOOP</div>
+          <div class="brand-sub">Panel de administracion</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-item active" data-view="estado">Estado</button>
+        <button class="nav-item" data-view="logs">Logs</button>
+        <button class="nav-item" data-view="backups">Copias de seguridad</button>
+        <button class="nav-item" data-view="config">Configuracion</button>
+      </nav>
+    </aside>
+
+    <main class="content">
+
+      <section id="view-estado" class="view active">
+        <h1>Estado del servidor</h1>
+        <div class="card status-card">
+          <div class="status-row">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Consultando...</span>
+          </div>
+          <div class="status-row muted">
+            <span>Tiempo activo: <strong id="uptimeText">-</strong></span>
+            <span>Puerto: <strong id="portText">-</strong></span>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnStart">Iniciar</button>
+            <button class="btn btn-secondary" id="btnStop">Detener</button>
+            <button class="btn btn-secondary" id="btnRestart">Reiniciar</button>
+            <button class="btn btn-secondary" id="btnOpenBrowser">Abrir en navegador</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Enlaces de acceso</h2>
+          <table class="links-table" id="linksTable">
+            <tbody><tr><td colspan="3">Consultando...</td></tr></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h2>Acceso remoto (tunel)</h2>
+          <div class="status-row muted" id="tunnelStatus">Detenido</div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnTunnelStart">Activar tunel</button>
+            <button class="btn btn-secondary" id="btnTunnelStop">Detener tunel</button>
+          </div>
+          <p class="hint">Requiere ngrok instalado en C:\ngrok\ngrok.exe con un tunel llamado "calendario" configurado.</p>
+        </div>
+      </section>
+
+      <section id="view-logs" class="view">
+        <h1>Logs del servidor</h1>
+        <div class="card">
+          <div class="btn-row">
+            <button class="btn btn-secondary" id="btnRefreshLogs">Actualizar</button>
+          </div>
+          <pre class="log-box" id="logBox">Sin datos aun.</pre>
+        </div>
+      </section>
+
+      <section id="view-backups" class="view">
+        <h1>Copias de seguridad</h1>
+        <div class="card">
+          <div class="field-row">
+            <label>Carpeta de backups</label>
+            <div class="field-inline">
+              <input type="text" id="backupFolder" readonly>
+              <button class="btn btn-secondary" id="btnChooseFolder">Elegir...</button>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnCreateBackup">Crear copia ahora</button>
+            <button class="btn btn-secondary" id="btnExportAs">Exportar copia a otra carpeta...</button>
+            <button class="btn btn-secondary" id="btnImportRestore">Importar copia desde archivo...</button>
+          </div>
+          <p class="hint">"Exportar" guarda una copia nueva donde vos elijas (ej. un USB). "Importar" reemplaza la base de datos actual por un archivo .db que elijas (por ejemplo, uno traido de otro equipo o de un backup externo).</p>
+        </div>
+        <div class="card">
+          <h2>Copias existentes</h2>
+          <table class="backup-table">
+            <thead><tr><th>Archivo</th><th>Fecha</th><th>Tamano</th><th></th></tr></thead>
+            <tbody id="backupList"><tr><td colspan="4">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="view-config" class="view">
+        <h1>Configuracion</h1>
+        <div class="card">
+          <h2>General</h2>
+          <div class="field-row">
+            <label for="cfgPort">Puerto del servidor</label>
+            <input type="number" id="cfgPort" min="1024" max="65535">
+          </div>
+          <div class="field-row checkbox-row">
+            <input type="checkbox" id="cfgAutoLaunch">
+            <label for="cfgAutoLaunch">Iniciar automaticamente con Windows</label>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnSaveConfig">Guardar</button>
+          </div>
+          <p class="hint">El cambio de puerto se aplica al reiniciar el servidor.</p>
+        </div>
+
+        <div class="card">
+          <h2>Backups automaticos</h2>
+          <div class="field-row checkbox-row">
+            <input type="checkbox" id="cfgBackupEnabled">
+            <label for="cfgBackupEnabled">Activar copias automaticas</label>
+          </div>
+          <div class="field-row">
+            <label for="cfgBackupInterval">Intervalo (horas)</label>
+            <input type="number" id="cfgBackupInterval" min="1" max="168">
+          </div>
+          <div class="field-row">
+            <label for="cfgBackupKeep">Copias a conservar</label>
+            <input type="number" id="cfgBackupKeep" min="1" max="365">
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnSaveBackupSchedule">Guardar programacion</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="js/panel.js"></script>
+</body>
+</html>

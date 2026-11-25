@@ -6,6 +6,7 @@ const path    = require('path');
 const fs      = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../database');
+const respaldoGithub = require('../respaldoGithub');
 
 const requireAuth = (req, res, next) => {
   if (req.session && req.session.adminAuth) return next();
@@ -239,6 +240,10 @@ router.post('/config/logo', requireAuth, upload.single('logo'), (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+router.get('/respaldo-github', requireAuth, respaldoGithub.estado);
+router.post('/respaldo-github/subir', requireAuth, respaldoGithub.subir);
+router.get('/respaldo-github/descargar', requireAuth, respaldoGithub.descargar);
 
 function saveAdjuntos(eventoId, files) {
   const ins = db.prepare(`
