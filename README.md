@@ -21,7 +21,7 @@
 El sistema provee interfaces diferenciadas:
 1. **Portal Público de Consulta (`/`)**: Visualización rápida mensual, semanal y diaria de eventos por sede, con filtrado dinámico, visualización de adjuntos y diseño optimizado para equipos de atención al usuario y recepción.
 2. **Panel de Gestión Clínica (`/gestion`)**: Control administrativo para creación, edición, reprogramación y auditoría de agendas médicas, subida de anexos y parametrización institucional.
-3. **Módulo de Supervisión de Escritorio (`Electron`)**: Aplicación de bandeja de sistema (*system tray*) que gestiona el ciclo de vida del servidor Express, supervisión de salud del proceso, túnel seguro y copias de seguridad.
+3. **Módulo de Supervisión de Escritorio (`Electron`)**: Aplicación con panel visual de control que gestiona el ciclo de vida del servidor Express, supervisión de salud del proceso, túnel seguro Ngrok y copias de seguridad inmediatas.
 
 ---
 
@@ -39,21 +39,19 @@ El sistema provee interfaces diferenciadas:
 │  - /api/admin (Gestión con autenticación segura)       │
 │  - /api/control (API IPC para control del supervisor)  │
 │  - Licenciamiento Ed25519 (Validación por hardware)    │
-└─────────────┬───────────────────────────┬──────────────┘
+└──────────────┬───────────────────────────┬─────────────┘
               │                           │
-┌─────────────▼─────────────┐ ┌───────────▼──────────────┐
-│  Better-SQLite3 (WAL DB)  │ │   Respaldo Automatizado  │
-│  - Transacciones atómicas │ │  - VACUUM INTO diario    │
-│  - Cero bloqueos lectura  │ │  - Sincronización GitHub │
-│  - Índices optimizados    │ │  - Manifiesto SHA-256    │
-└───────────────────────────┘ └──────────────────────────┘
+┌──────────────▼─────────────┐ ┌───────────▼─────────────┐
+│    SQLite 3 (WAL Mode)     │ │   Almacenamiento Local  │
+│  - eventos (agendas)       │ │   /uploads (adjuntos)   │
+│  - sedes, tipos_evento     │ └─────────────────────────┘
+│  - usuarios, configuracion │
+└────────────────────────────┘
 ```
 
-### Componentes Clave
-
-- **Motor de Base de Datos**: SQLite 3 mediante `better-sqlite3`, configurado en modo `WAL` (*Write-Ahead Logging*) y claves foráneas activas, garantizando lecturas concurrentes sin bloqueo y persistencia ante caídas de energía.
+- **Motor SQLite en Modo WAL**: Soporta transacciones concurrentes de lectura y escritura ultrarrápidas, garantizando lecturas sin bloqueo y persistencia ante caídas de energía.
 - **Seguridad Criptográfica Ed25519**: Validación estricta de licencias de software vinculadas al identificador criptográfico de hardware (`MachineGuid`) del servidor anfitrión.
-- **Respaldos Automatizados a GitHub**: Módulo en segundo plano (`respaldoGithub.js`) que genera respaldos diarios en caliente (`VACUUM INTO`), verifica integridad con hash SHA-256 y sincroniza copias estructuradas por año/mes/semana a un repositorio privado.
+- **Respaldos Automatizados a GitHub**: Módulo en segundo plano (`respaldoGithub.js`) que genera respaldos en caliente (`VACUUM INTO`), verifica integridad con hash SHA-256 y sincroniza copias estructuradas a un repositorio privado.
 - **Túnel Seguro de Acceso Remoto**: Integración con Ngrok para permitir el acceso unificado desde sedes remotas sin requerir apertura de puertos WAN inseguros.
 
 ---
@@ -84,59 +82,106 @@ Calendario/
 - **Runtime**: Node.js `>= 20.x` (Recomendado Node.js 24.x LTS).
 - **Sistema Operativo**: Windows 10 / Windows 11 / Windows Server 2016+.
 - **Herramientas**: Git para Windows configurado con credenciales de acceso.
-- **Módulo Nativo**: Compilador compatible para `better-sqlite3` si se reconstruyen dependencias.
+- **Ngrok**: Binario de Ngrok configurado para túnel WAN corporativo.
 
 ---
 
-## 5. Instalación y Puesta en Marcha
+## 5. Configuración de Túnel WAN (Ngrok) y Dominio Fijo
 
-### 5.1 Modo Desarrollo
-```bash
-# Instalar dependencias
-npm install
+El sistema utiliza **Ngrok** para ofrecer acceso exterior a las sedes de Pamplona y Ocaña mediante un dominio fijo seguro (HTTPS).
 
-# Iniciar servidor en modo desarrollo
-npm start
+### 5.1 Ubicación y Configuración en el Servidor
+- **Binario**: `C:\ngrok\ngrok.exe`
+- **Archivo de Configuración**: `%LOCALAPPDATA%\ngrok\ngrok.yml` (`C:\Users\AuxSistemas\AppData\Local\ngrok\ngrok.yml`)
 
-# Iniciar supervisor de escritorio Electron
-npm run electron:dev
+### 5.2 Estructura del Archivo `ngrok.yml`
+```yaml
+version: "3"
+agent:
+    authtoken: 3BV28FWJ66E9lsT4jX8Yvg7jCtW_6waSNTq8vkbaLprRWQggt
+
+tunnels:
+  calendario:
+    proto: http
+    addr: 127.0.0.1:8765
+    domain: unsoldierlike-izayah-tetchily.ngrok-free.dev
 ```
 
-### 5.2 Compilación del Instalador Autónomo (Desktop NSIS)
+### 5.3 Comandos de Gestión de Ngrok
+```bash
+# Verificar validez de la configuración
+ngrok config check
+
+# Iniciar túnel de forma manual
+ngrok start calendario
+
+# Operar túnel en segundo plano permanente con PM2
+pm2 start "C:\ngrok\ngrok.exe" --name "calendario-tunnel" -- start calendario
+pm2 save
+```
+
+### 5.4 Enlaces de Producción
+- **Acceso Público para Sedes**: `https://unsoldierlike-izayah-tetchily.ngrok-free.dev`
+- **Gestión Administrativa**: `https://unsoldierlike-izayah-tetchily.ngrok-free.dev/gestion`
+
+---
+
+## 6. Procedimiento de Restauración en Servidor Nuevo o por Falla
+
+En caso de reinstalación, cambio de servidor o desastre técnico, el procedimiento exacto es:
+
+### Paso 1: Clonar el Repositorio e Instalar Dependencias
+```bash
+git clone https://github.com/AntionART/Calendario.git
+cd Calendario
+npm install
+```
+
+### Paso 2: Configurar Ngrok
+1. Descargar `ngrok.exe` y ubicarlo en `C:\ngrok\ngrok.exe`.
+2. Agregar al PATH o crear la configuración en `%LOCALAPPDATA%\ngrok\ngrok.yml` con el authtoken y el túnel `calendario` (ver sección 5.2).
+
+### Paso 3: Licenciamiento
+Colocar el archivo `license.lic` firmado en la raíz del proyecto. El sistema validará automáticamente la firma criptográfica con la clave pública Ed25519 embebida.
+
+### Paso 4: Restaurar Base de Datos
+Copiar el último respaldo de `calendario.db` en la carpeta `db/` y los adjuntos en `uploads/`.
+
+### Paso 5: Compilar el Instalador Desktop o Iniciar con PM2
+- **Opción A (Instalador Desktop Autónomo)**:
+  ```bash
+  npm run build:desktop
+  ```
+  Ejecutar el instalador generado en `release/CalendarioNeurocoop-Setup-1.0.0.exe`.
+
+- **Opción B (Servicio de fondo con PM2)**:
+  ```bash
+  pm2 start server.js --name "calendario" -- --port 8765
+  pm2 start "C:\ngrok\ngrok.exe" --name "calendario-tunnel" -- start calendario
+  pm2 save
+  ```
+
+---
+
+## 7. Compilación del Instalador Autónomo (Desktop NSIS)
+
 El proyecto cuenta con un proceso de construcción automatizado que ofusca el código fuente y empaqueta un runtime de Node.js portátil:
 
 ```bash
 npm run build:desktop
 ```
 
-Este comando ejecuta las siguientes etapas:
+Etapas de construcción:
 1. `icon`: Genera el ícono oficial `icon.ico` a partir del activo institucional.
 2. `vendor:node`: Prepara el binario `node.exe` autocontenido.
-3. `obfuscate`: Aplica ofuscación a las capas de negocio y frontend.
+3. `obfuscate`: Aplica ofuscación JavaScript avanzada a las capas de negocio y frontend.
 4. `stage`: Consolida los recursos de producción y dependencias estrictas.
-5. `verify:staged`: Levanta un servidor efímero para validar endpoints antes de empaquetar.
+5. `verify:staged`: Levanta un servidor efímero para validar endpoints y licencias antes de empaquetar.
 6. `electron-builder`: Compila el instalador final en `release/CalendarioNeurocoop-Setup-<version>.exe`.
 
 ---
 
-## 6. Operación en Producción y Alta Disponibilidad
-
-Para despliegues en servidores donde el software deba iniciar automáticamente tras reinicios o cortes de energía, se recomienda operar mediante **PM2**:
-
-```bash
-# Iniciar servidor Express
-pm2 start server.js --name "calendario" -- --port 8765
-
-# Iniciar túnel Ngrok (opcional)
-pm2 start "ngrok http 8765" --name "calendario-tunnel"
-
-# Persistir configuración para arranque automático con el sistema
-pm2 save
-```
-
----
-
-## 7. Seguridad y Control de Acceso
+## 8. Seguridad y Control de Acceso
 
 - **Protección de Sesiones**: Tokens de sesión firmados con secretos de 256 bits generados criptográficamente.
 - **Límite de Intentos (Rate Limiting)**: Mitigación de fuerza bruta en `/api/admin/login` con bloqueo temporal por IP tras 5 intentos fallidos.
@@ -145,7 +190,7 @@ pm2 save
 
 ---
 
-## 8. Autoría y Créditos
+## 9. Autoría y Créditos
 
 - **Desarrollador Principal**: [Daniel Arteaga](https://github.com/AntionART) (`DanielARTp`)
 - **Organización**: NEUROCOOP  
